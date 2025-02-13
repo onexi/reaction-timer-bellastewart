@@ -7,14 +7,14 @@
       /* Let's make it nice and pretty */
       body {
         font-family: Arial, sans-serif;
-        background: pink; /* or your desired background */
+        background: #f8d6d6;
         margin: 0;
         padding: 20px;
       }
       #container {
         max-width: 500px;
         margin: auto;
-        background: #fff;
+        background: #f5d0d0;
         padding: 20px;
         text-align: center;
         border: 1px solid #ccc;
@@ -40,26 +40,6 @@
         background-color: green;
         color: white;
       }
-
-      /* Animated dog CSS */
-      @keyframes dogWalk {
-        0% {
-          left: -200px; /* Start off-screen */
-        }
-        100% {
-          left: 100%; /* End off-screen to the right */
-        }
-      }
-      
-      /* Position and animate the dog image */
-      #dog {
-        position: fixed;       /* Keeps the dog fixed in the viewport */
-        bottom: 20px;          /* Adjust vertical placement as needed */
-        left: -200px;          /* Start off-screen */
-        width: 150px;          /* Size of the dog image */
-        z-index: 1000;         /* Ensures it sits above other content */
-        animation: dogWalk 15s linear infinite; /* 15 seconds for one cycle */
-      }
     </style>
   </head>
   <body>
@@ -77,9 +57,6 @@
       <button id="resultsBtn" disabled>Get Ranking</button>
       <div id="message"></div>
     </div>
-
-    <!-- Animated dog image -->
-    <img id="dog" src="dog.gif" alt="Walking Dog">
 
     <script>
       // DOM element references
@@ -101,6 +78,8 @@
       // When the user clicks "Start", send the username to the server.
       // The server sets a random delay and records its ready time.
       startBtn.addEventListener("click", async function() {
+          // Precautionary stuff
+          // Trim out whitespaces if the user adds one by mistake. 
         const username = usernameInput.value.trim();
         if (!username) {
           alert("Please enter your name.");
@@ -109,9 +88,13 @@
         // Disable these so the user can't restart mid-game.
         startBtn.disabled = true;
         usernameInput.disabled = true;
+        // Update the message area to inform the user to get ready
         messageDiv.textContent = "Get ready...";
+        
+        // Try to communicate with the server to start the reaction timer.
         try {
           const response = await fetch("/start", {
+            // Send a POST request to the "/start" endpoint with the username in JSON format.
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username: username }),
@@ -121,6 +104,7 @@
             messageDiv.textContent = data.error;
             return;
           }
+          // Set a timer so that after the delay the button changes to red (ready to click)
           timerTimeout = setTimeout(function() {
             reactionButton.style.backgroundColor = "red";
             reactionButton.textContent = "Click!";
@@ -147,17 +131,22 @@
             return;
           }
           if (data.penalty) {
+            // If a penalty was triggered (either by clicking too early or multiple times),
+            // reset the button to waiting state (green) and show the penalty message.
             reactionButton.style.backgroundColor = "green";
             reactionButton.textContent = "Wait...";
             messageDiv.textContent =
               data.message + " New wait time: " + data.newDelay + " ms";
+            // Clear any existing timer.
             clearTimeout(timerTimeout);
+            // Set a new timer for the penalty delay. When finished, change to ready state (red).
             timerTimeout = setTimeout(function() {
               reactionButton.style.backgroundColor = "red";
               reactionButton.textContent = "Click!";
               messageDiv.textContent = "Click NOW!";
             }, data.newDelay);
           } else {
+            // Valid click recorded: display the reaction time.
             messageDiv.textContent =
               data.message + " Your reaction time: " + data.reactionTime + " ms";
             resultsBtn.disabled = false;

@@ -1,4 +1,4 @@
-// server.js
+// server.js THIS IS THE BASE CODE THAT WAS GIVEN TO ME AS AN EXAMPLE
 const express = require('express');
 const app = express();
 
@@ -19,7 +19,7 @@ app.get('/messages', (req, res) => {
   res.json({ messages });
 });
 
-/**
+/** 
  * POST /messages
  * Expects a JSON payload with "username" and "message".
  * Adds the new message to the messages array.
